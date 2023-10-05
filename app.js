@@ -102,10 +102,10 @@ app.get(
   "/user/tweets/feed/",
   authenticationToken,
   async (request, response) => {
-    const userTweetQuery = `select user.username, tweet.tweet,
-    tweet.date_time as dateTime from (user inner join follower
-    on user.user_id = tweet.user_id) as T left join tweet
-     T.user_id = follower.following_user_id order_by tweet.tweet DESC limit 4;`;
+    const userTweetQuery = `select user.username, T.tweet, T.date_time as dateTime from
+    (follower inner join tweet on follower.following_user_id = tweet.user_id)
+     as T inner join user on T.user_id = user.user_id order by T.date_time DESC
+     limit 4;`;
     const dbResponse = await db.all(userTweetQuery);
     response.send(dbResponse);
   }
@@ -122,9 +122,9 @@ app.get("/user/following/", authenticationToken, async (request, response) => {
 //Returns the list of all names of people who follows the user
 
 app.get("/user/followers/", authenticationToken, async (request, response) => {
-  const userFollowingQuery = `select user.name from user inner join follower 
-    ON user.user_id = follower_user_id`;
-  const dbResponse = await db.all(userFollowingQuery);
+  const userFollowerQuery = `select user.name from user inner join follower 
+    ON user.user_id = follower.follower_user_id`;
+  const dbResponse = await db.all(userFollowerQuery);
   response.send(dbResponse);
 });
 
@@ -132,4 +132,9 @@ app.get("/user/followers/", authenticationToken, async (request, response) => {
 
 app.get("/tweets/:tweetId/", authenticationToken, async (request, response) => {
   const { tweetId } = request.params;
+  const sqlQueryOfTweet = `select tweet.tweet, count(like.user_id) as
+  likes, count(reply.user_id) as replies, tweet.date_time as DateTime from 
+  tweet natural join reply natural join like where tweet_id = ${tweetId};`;
+  const dbResponse = await db.get(sqlQueryOfTweet);
+  response.send(dbResponse);
 });

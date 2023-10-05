@@ -29,3 +29,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvZ
 ###
 GET http://localhost:3000/user/followers/
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvZUJpZGVuIiwiaWF0IjoxNjk1OTE0Mjk4fQ.1gMlbLssoIT8d81VjRQyXekS-lr64p3TRqhXnoMrsoM
+
+###
+GET http://localhost:3000/tweets/5/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvZUJpZGVuIiwiaWF0IjoxNjk1OTE0Mjk4fQ.1gMlbLssoIT8d81VjRQyXekS-lr64p3TRqhXnoMrsoM
