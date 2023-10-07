@@ -58,11 +58,13 @@ app.post("/login/", async (request, response) => {
   const selectUserQuery = `select * from user where 
     username = '${username}'`;
   const dbUser = await db.get(selectUserQuery);
+
   if (dbUser === undefined) {
     response.status(400);
     response.send("Invalid user");
   } else {
     const isPasswordMatched = await bcrypt.compare(password, dbUser.password);
+
     if (isPasswordMatched === true) {
       const payload = {
         username: username,
@@ -91,6 +93,12 @@ const authenticationToken = (request, response, next) => {
         response.status(401);
         response.send("Invalid JWT Token");
       } else {
+        request.username = payload.username;
+        let { username } = request;
+        const SqlQuery = `select user_id as user_id from user 
+        where username = ${username}`;
+        const dbUserId = await db.get(SqlQuery);
+        response.send(dbUserId);
         next();
       }
     });
@@ -102,9 +110,11 @@ app.get(
   "/user/tweets/feed/",
   authenticationToken,
   async (request, response) => {
+    let { userId } = request;
     const userTweetQuery = `select user.username, T.tweet, T.date_time as dateTime from
     (follower inner join tweet on follower.following_user_id = tweet.user_id)
-     as T inner join user on T.user_id = user.user_id order by T.date_time DESC
+     as T inner join user on T.user_id = user.user_id 
+     where follower.follower_user_id = ${userId} order by T.date_time DESC
      limit 4;`;
     const dbResponse = await db.all(userTweetQuery);
     response.send(dbResponse);
@@ -114,7 +124,7 @@ app.get(
 //Returns the list of all names of people whom the user follows
 app.get("/user/following/", authenticationToken, async (request, response) => {
   const userFollowingQuery = `select user.name from user inner join follower 
-    ON user.user_id = follower.following_user_id`;
+    ON user.user_id = follower.following_user_id where follower.follower_user_id = 2`;
   const dbResponse = await db.all(userFollowingQuery);
   response.send(dbResponse);
 });
@@ -123,7 +133,7 @@ app.get("/user/following/", authenticationToken, async (request, response) => {
 
 app.get("/user/followers/", authenticationToken, async (request, response) => {
   const userFollowerQuery = `select user.name from user inner join follower 
-    ON user.user_id = follower.follower_user_id`;
+    ON user.user_id = follower.follower_user_id where follower.following_user_id = 2`;
   const dbResponse = await db.all(userFollowerQuery);
   response.send(dbResponse);
 });
